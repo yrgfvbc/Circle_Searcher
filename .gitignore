@@ -1,0 +1,7 @@
+*.log
+credentials.py
+Scripts
+pyvenv.cfg
+Lib
+Include
+__Pycache__
