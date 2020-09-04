@@ -22,8 +22,10 @@ class Circle():
         #attempt to find all places in circle
 
         self.my_places = self.find_all_places_in_circle()
+        #self.my_places = self.my_places["results"]
 
         #if function returns string - return the error
+
         if isinstance(self.my_places, dict):
             self.ammount_of_places = len(self.my_places["results"])
             circle_logger.debug("Found %i places arround %s at radius %s" %(self.ammount_of_places, self.center, self.radius))
@@ -70,7 +72,7 @@ class Circle_Searcher():
         for center in self.coordinate_list:
             if not center in self.all_circle_dictionary: #checks if the coordinate was already checked - if so doesnt check it to reduce runtime
                 current_circle = Circle(center,self.circle_radius,type = type)
-                self.all_circle_dictionary[center] = current_circle.my_places
+                #save the results in a master dictionary in the following format - coordinate : results, discarding all other info in the payload
+                self.all_circle_dictionary[center] = current_circle.my_places["results"]
         return self.all_circle_dictionary
-
 
