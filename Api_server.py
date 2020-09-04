@@ -4,14 +4,15 @@ from flask import request, jsonify
 import Circle_Searcher
 from flask.logging import default_handler
 
+#hash password - when u finish
 #configure the api servers logging to be named 'werkzeug' to log to a file
-#this happens because flask's default logger (app.logger)
+#this happens because flask's default logger (app.logger) uses the werkzeug logger
 api_logger = logger.make_logger('werkzeug',"api_logger.log")
 
 #A class for raising an exception for invalid paramaters
 
 class InvalidParamaters(Exception):
-    status_code = 401
+    status_code = 405
     def __init__(self, message, status_code = None):
         self.message = message
         if status_code:
@@ -62,7 +63,6 @@ def handle_invalid_paramaters(error):
 def home():
     return '''<h1>Circle searcher Api</h1>
 <p>Returns a list of places inside the circles you choose.</p>'''
-#https://maps.googleapis.com/maps/api/place/nearbysearch/json
 
 @app.route('/api/circlesearcher', methods=['GET'])
 def circlesearcher_api():
