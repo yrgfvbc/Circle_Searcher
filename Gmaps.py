@@ -37,7 +37,7 @@ class gmaps():
         elif center and not radius:
             return ("Radius missing")
         params = {"location":center,"radius":radius,"key":self.api_key, "type":type,"pagetoken":next_page_token}
-        log_params = params.copy()
+        log_params = params.copy() #Make copy of params dict without key for logging
         log_params.pop("key")
         gmaps_logger.debug("Requesting nearby places - params {%s}" %log_params)
         try:
@@ -68,23 +68,4 @@ class gmaps():
         return status_message
 
 
-# Python3 code to demonstrate working of
-# Find dictionary matching value in list
-# Using next() + dictionary comprehension
 
-# Initialize list
-test_list = [{'a': 2, 'b': 4, 'c': 6},
-             {'a': 5, 'b': 7, 'c': 8},
-             {'b': 10}]
-
-# Printing original list
-print("The original list is : " + str(test_list))
-
-# Using next() + dictionary comprehension
-# Find dictionary matching value in list
-res = next((sub for sub in test_list ), None)
-for location in test_list:
-    name_list = tes1
-
-# printing result
-print("The filtered dictionary value is : " + str(res))
