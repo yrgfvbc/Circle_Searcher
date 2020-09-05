@@ -1,22 +1,24 @@
 import flask
 import logger
-from flask import request, jsonify
-import Circle_Searcher
+from flask import request , jsonify
 from flask.logging import default_handler
+import circle_Searcher
 
-#hash password - when u finish
-#configure the api servers logging to be named 'werkzeug' to log to a file
-#this happens because flask's default logger (app.logger) uses the werkzeug logger
-api_logger = logger.make_logger('werkzeug',"api_logger.log")
+#Hash password - when u finish
+#Configure the api servers logging to be named 'werkzeug' to log to a file
+#This happens because flask's default logger (app.logger) uses the 'werkzeug' logger
+
+api_logger = logger.make_logger('werkzeug',display_name="api_server")
 
 #A class for raising an exception for invalid paramaters
 
 class InvalidParamaters(Exception):
-    status_code = 405
+    status_code = 400
     def __init__(self, message, status_code = None):
         self.message = message
         if status_code:
             self.status_code = status_code
+        app.logger.debug("error - %s" %self.message + "statuscode = %s"%self.status_code)
 
     def error_message(self):
         payload = {"error":
@@ -28,13 +30,12 @@ class InvalidParamaters(Exception):
 app = flask.Flask(__name__)
 app.logger.removeHandler(default_handler)
 app.logger = api_logger
-app.logger.debug("test")
 
-#checks if coordinate_list is valid - all items in list are pairs of numbers seperated by a ","
+#Checks if coordinate_list is valid - all items in list are pairs of numbers seperated by a ","
 #if have time - will check if coordinate is in range
 
 def check_list_validity(coordinate_list):
-    validity = 1
+    validity = True
     for coordinate in coordinate_list:
         message = None
         lat_lon = coordinate.split(",")
@@ -44,24 +45,23 @@ def check_list_validity(coordinate_list):
             try:
                 lat = float(lat)
                 lon = float(lon)
-            except(ValueError):
+            except ValueError:
                 message = "invalid coordinate"
-                validity = 0
-                break
+                validity = False
         else:
             message = "list not in format"
-            validity = 0
+            validity = False
     return validity, message
 
 
 @app.errorhandler(InvalidParamaters)
 def handle_invalid_paramaters(error):
     response_message = jsonify(error.error_message())
-    return response_message
+    return response_message, error.status_code
 
 @app.route('/', methods=['GET'])
 def home():
-    return '''<h1>Circle searcher Api</h1>
+    return '''<h1>circle searcher Api</h1>
 <p>Returns a list of places inside the circles you choose.</p>'''
 
 @app.route('/api/circlesearcher', methods=['GET'])
@@ -69,38 +69,43 @@ def circlesearcher_api():
 
     # check if coordinate_list or radius exist
     #if they do, check validity
-    #if invalid - return errors acordingly
+    #if invalid - return errors accordingly
 
     if "coordinate_list" in request.args and "radius" in request.args:
-        #api_logger.debug("recieved request - coordinate_list - %s , radius - %s"%())
+        api_logger.debug("recieved request - coordinate_list - %s , radius - %s"%(request.args["coordinate_list"],request.args["radius"]))
         coordinate_list = request.args["coordinate_list"].split("/")
         radius = request.args["radius"]
         #check if radius is valid
         try:
             radius = float(radius)
             if radius < 0:
-                raise(InvalidParamaters("Invalid radius - radius must be positive"))
-        except(ValueError):
-            raise (InvalidParamaters("Invalid radius - %s"%radius ))
+                error_message = "Invalid radius - radius must be positive"
+                raise InvalidParamaters(error_message)
+        except ValueError:
+            raise InvalidParamaters("Invalid radius - %s"%radius )
         #check if coordinate list is valid
         list_validity, message = check_list_validity(coordinate_list)
-        if not list_validity == 1:
-            raise(InvalidParamaters("Invalid coordinates list - %s"%message))
+        if list_validity == False:
+            raise InvalidParamaters("Invalid coordinates list - %s"%message)
         else:
             try:
-                searcher = Circle_Searcher.Circle_Searcher(coordinate_list,radius)
-                payload = searcher.all_circle_dictionary
+                if "gmaps_key" in request.args:
+                    key = request.args["gmaps_key"]
+                else:
+                    key = None
+                payload = circle_Searcher.circle_Searcher(coordinate_list,radius, key)
                 return payload
-            except(ValueError):
-                raise InvalidParamaters("Gmaps authentication error - no key or credentials file",403)
+            except ConnectionError as error:
+                raise InvalidParamaters(error.args,500)
 
-    #if center or radius missing - check wich and return error messege
+    #if center or radius missing - check which and return error messege
     else:
         if "radius" in request.args:
-            raise (InvalidParamaters("Missing coordinate list" ,402))
+            raise InvalidParamaters("Missing coordinate list")
         else:
-            raise (InvalidParamaters("Missing radius" , 402))
+            raise InvalidParamaters("Missing radius")
 
 
 
-app.run(host= '0.0.0.0')
+if __name__ == "__main__":
+    app.run(host= '0.0.0.0')

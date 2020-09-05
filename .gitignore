@@ -6,3 +6,4 @@ Lib
 Include
 __Pycache__
 .ipynb_checkpoints
+.idea/

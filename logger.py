@@ -1,7 +1,10 @@
 import logging
 #generic logging code
-def make_logger(logger_name,log_file_name):
-    logging_format = logging.Formatter('%(asctime)s - %(name)s: %(message)s')
+def make_logger(logger_name,log_file_name = "circle_searcher.log", display_name = None):
+    if display_name == None:
+        logging_format = logging.Formatter('%(asctime)s - %(name)s: %(message)s')
+    else:
+        logging_format = logging.Formatter('%(asctime)s - ' + display_name + ' : %(message)s')
     logger = logging.getLogger(logger_name)
     logger.setLevel(level = logging.DEBUG)
     console_handler = logging.StreamHandler()
