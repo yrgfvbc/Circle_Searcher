@@ -89,6 +89,3 @@ def check_all_circles(coordinate_list, circle_radius, gmaps_wrapper):
             else:
                 all_circle_dictionary[center] = current_circle.my_places["results"]
     return all_circle_dictionary
-
-#test = circle_Searcher(["32.058895,34.805781"],300)
-#print(test)

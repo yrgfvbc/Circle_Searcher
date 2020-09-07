@@ -67,5 +67,3 @@ class gmaps():
             status_message = "Unknown serverside error - please try again"
         return status_message
 
-
-

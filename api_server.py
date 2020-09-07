@@ -4,20 +4,22 @@ from flask import request , jsonify
 from flask.logging import default_handler
 import circle_Searcher
 
-#Hash password - when u finish
-#Configure the api servers logging to be named 'werkzeug' to log to a file
-#This happens because flask's default logger (app.logger) uses the 'werkzeug' logger
+# Configure the api servers logging to be named 'werkzeug' so i can log to a file
+# This is needed because flask's default logger (app.logger) uses the 'werkzeug' logger with the logger name
 
 api_logger = logger.make_logger('werkzeug',display_name="api_server")
 
-#A class for raising an exception for invalid paramaters
+# A class for raising an exception for invalid paramaters
 
 class InvalidParamaters(Exception):
     status_code = 400
+
     def __init__(self, message, status_code = None):
         self.message = message
-        if status_code:
+
+        if not status_code == None:
             self.status_code = status_code
+
         app.logger.debug("error - %s" %self.message + "statuscode = %s"%self.status_code)
 
     def error_message(self):
@@ -31,26 +33,36 @@ app = flask.Flask(__name__)
 app.logger.removeHandler(default_handler)
 app.logger = api_logger
 
-#Checks if coordinate_list is valid - all items in list are pairs of numbers seperated by a ","
-#if have time - will check if coordinate is in range
+# Checks if coordinate_list is valid - all items in list are pairs of numbers seperated by a ","
+# Also checks if the coordinates are in range
 
 def check_list_validity(coordinate_list):
     validity = True
+
     for coordinate in coordinate_list:
         message = None
         lat_lon = coordinate.split(",")
+
         if len(lat_lon) == 2:
             lat = lat_lon[0]
             lon = lat_lon[1]
+
             try:
                 lat = float(lat)
                 lon = float(lon)
+
+                if not(-90 <= lat <= 90 and -180 <= lon <= 180):
+                    message = "Coordinate out of range - lat must be between -90 ~ 90, lon must be between -180 ~ 180"
+                    validity = False
+
             except ValueError:
                 message = "invalid coordinate"
                 validity = False
+
         else:
             message = "list not in format"
             validity = False
+
     return validity, message
 
 
