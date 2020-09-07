@@ -2,7 +2,7 @@ import flask
 import logger
 from flask import request , jsonify
 from flask.logging import default_handler
-import circle_Searcher
+import circle_searcher
 
 # Configure the api servers logging to be named 'werkzeug' so i can log to a file
 # This is needed because flask's default logger (app.logger) uses the 'werkzeug' logger with the logger name
@@ -65,7 +65,7 @@ def check_list_validity(coordinate_list):
 
     return validity, message
 
-
+# Add error handler to api server that handles my custom error
 @app.errorhandler(InvalidParamaters)
 def handle_invalid_paramaters(error):
     response_message = jsonify(error.error_message())
@@ -79,15 +79,14 @@ def home():
 @app.route('/api/circlesearcher', methods=['GET'])
 def circlesearcher_api():
 
-    # check if coordinate_list or radius exist
-    #if they do, check validity
-    #if invalid - return errors accordingly
-
+    # Check if coordinate_list or radius exist
+    # If they do, check validity
+    # If invalid - return errors accordingly
     if "coordinate_list" in request.args and "radius" in request.args:
         api_logger.debug("recieved request - coordinate_list - %s , radius - %s"%(request.args["coordinate_list"],request.args["radius"]))
         coordinate_list = request.args["coordinate_list"].split("/")
         radius = request.args["radius"]
-        #check if radius is valid
+        # Check if radius is valid
         try:
             radius = float(radius)
             if radius < 0:
@@ -95,7 +94,8 @@ def circlesearcher_api():
                 raise InvalidParamaters(error_message)
         except ValueError:
             raise InvalidParamaters("Invalid radius - %s"%radius )
-        #check if coordinate list is valid
+
+        # Check if coordinate list is valid
         list_validity, message = check_list_validity(coordinate_list)
         if list_validity == False:
             raise InvalidParamaters("Invalid coordinates list - %s"%message)
@@ -105,12 +105,13 @@ def circlesearcher_api():
                     key = request.args["gmaps_key"]
                 else:
                     key = None
-                payload = circle_Searcher.circle_Searcher(coordinate_list,radius, key)
+                payload = circle_searcher.circle_searcher(coordinate_list,radius, key)
                 return payload
+
             except ConnectionError as error:
                 raise InvalidParamaters(error.args,500)
 
-    #if center or radius missing - check which and return error messege
+    # If center or radius missing - check which and return error messege
     else:
         if "radius" in request.args:
             raise InvalidParamaters("Missing coordinate list")
@@ -118,6 +119,6 @@ def circlesearcher_api():
             raise InvalidParamaters("Missing radius")
 
 
-
+# Run server on current public ip address
 if __name__ == "__main__":
     app.run(host= '0.0.0.0')
