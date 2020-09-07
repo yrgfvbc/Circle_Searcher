@@ -6,11 +6,9 @@ import circle_searcher
 
 # Configure the api servers logging to be named 'werkzeug' so i can log to a file
 # This is needed because flask's default logger (app.logger) uses the 'werkzeug' logger with the logger name
-
 api_logger = logger.make_logger('werkzeug',display_name="api_server")
 
 # A class for raising an exception for invalid paramaters
-
 class InvalidParamaters(Exception):
     status_code = 400
 
@@ -35,7 +33,6 @@ app.logger = api_logger
 
 # Checks if coordinate_list is valid - all items in list are pairs of numbers seperated by a ","
 # Also checks if the coordinates are in range
-
 def check_list_validity(coordinate_list):
     validity = True
 
